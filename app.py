@@ -324,43 +324,45 @@ def payment_return():
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Payment Completed</title>
+  <title>Thank You - POND Mobile</title>
+  <meta http-equiv="refresh" content="5;url=https://www.pondmobile.com/">
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       margin: 0;
-      background: #f5f5f5;
+      background: linear-gradient(135deg, #c68157 0%, #6b87b7 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 32px 18px;
     }
     .box {
       background: white;
-      width: 520px;
-      max-width: calc(100% - 40px);
       padding: 40px;
       border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+      box-shadow: 0 10px 30px rgba(0,0,0,.1);
+      max-width: 500px;
     }
-    a {
-      display: inline-block;
-      margin-top: 20px;
-      text-decoration: none;
-      background: #0f39ff;
-      color: white;
-      padding: 12px 24px;
-      border-radius: 999px;
-    }
+    h1 { color: #4a4a4a; margin: 0 0 16px; font-size: 32px; }
+    p { color: #666; margin: 0 0 24px; font-size: 18px; }
+    .timer { color: #6b87b7; font-weight: bold; }
   </style>
 </head>
 <body>
   <div class="box">
-    <h1>Payment Completed</h1>
-    <p>Your payment was submitted successfully.</p>
-    <a href="/">Make another payment</a>
+    <h1>Thank you for using Pond Mobile!</h1>
+    <p>You will be redirected to <strong>pondmobile.com</strong> in <span class="timer">5 seconds</span>.</p>
   </div>
+  <script>
+    let seconds = 5;
+    const timer = document.querySelector('.timer');
+    setInterval(() => {
+      seconds--;
+      if (seconds > 0) timer.textContent = seconds + ' seconds';
+    }, 1000);
+  </script>
 </body>
 </html>
 """

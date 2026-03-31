@@ -30,6 +30,41 @@ ssh-copy-id -i ~/.ssh/github_deploy.pub user@your-server.com
 cat ~/.ssh/github_deploy
 ```
 
+### Environment Configuration
+
+Before deploying, configure `deploy/.env` on the server:
+
+```bash
+# On the server
+cd /opt/pondmobile-payment
+cp deploy/.env.example deploy/.env
+nano deploy/.env
+```
+
+**Critical settings for production:**
+
+```bash
+# Authorize.net credentials (required)
+AUTHORIZE_API_LOGIN_ID=your-actual-api-login-id
+AUTHORIZE_TRANSACTION_KEY=your-actual-transaction-key
+
+# ⚠️ IMPORTANT: Use public domain/IP, NOT localhost
+# This URL is used for payment return after Authorize.net checkout
+APP_BASE_URL=https://payment.pondmobile.com
+
+# CORS origins - must match where users access the payment form
+ALLOWED_ORIGINS=https://payment.pondmobile.com,https://pondmobile.com
+
+# Production mode
+FLASK_ENV=production
+DOCKER_ENV=true
+```
+
+**Why NOT localhost?**
+- `APP_BASE_URL`: After payment, user is redirected to this URL. If `localhost`, they'll go to their own machine, not your server.
+- `ALLOWED_ORIGINS`: Browser blocks requests from different origins. If `localhost`, external users can't access your form.
+```
+
 ### Manual Deployment Trigger
 
 1. Go to `Actions` tab in GitHub
@@ -44,7 +79,7 @@ cat ~/.ssh/github_deploy
 
 - Docker installed on server
 - Git access to repository
-- `deploy/.env` configured on server
+- `deploy/.env` configured with production values (⚠️ **NOT localhost**)
 
 ### Quick Deploy
 

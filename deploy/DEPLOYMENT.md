@@ -2,6 +2,18 @@
 
 ## Automated Deployment via GitHub Actions
 
+### Deployment Environments
+
+Three environment configurations are available:
+
+| Environment | Config File | CORS Settings | Use Case |
+|-------------|-------------|---------------|----------|
+| **production** | `deploy/.env.production` | Strict (pondmobile.com only) | Live production deployment |
+| **staging** | `deploy/.env.staging` | Relaxed (+localhost) | Testing production API locally |
+| **development** | `deploy/.env.development` | Localhost only | Local development |
+
+**Default:** Automatic deploys use `staging` (allows localhost testing)
+
 ### Required GitHub Secrets
 
 Configure these secrets in: `Repository Settings > Secrets and variables > Actions`
@@ -32,44 +44,69 @@ cat ~/.ssh/github_deploy
 
 ### Environment Configuration
 
-Before deploying, configure `deploy/.env` on the server:
+Three pre-configured environments are available:
 
-```bash
-# On the server
-cd /opt/pondmobile-payment
-cp deploy/.env.example deploy/.env
-nano deploy/.env
-```
-
-**Critical settings for production:**
-
+**1. Production** (`deploy/.env.production`)
 ```bash
 # Authorize.net credentials (required)
 AUTHORIZE_API_LOGIN_ID=your-actual-api-login-id
 AUTHORIZE_TRANSACTION_KEY=your-actual-transaction-key
 
-# ⚠️ IMPORTANT: Use public domain/IP, NOT localhost
-# This URL is used for payment return after Authorize.net checkout
+# Production domains only - strict CORS
 APP_BASE_URL=https://www.pondmobile.com
-
-# CORS origins - must match where users access the payment form
 ALLOWED_ORIGINS=https://www.pondmobile.com,https://pondmobile.com
 
-# Production mode
 FLASK_ENV=production
 DOCKER_ENV=true
 ```
 
-**Why NOT localhost?**
-- `APP_BASE_URL`: After payment, user is redirected to this URL. If `localhost`, they'll go to their own machine, not your server.
-- `ALLOWED_ORIGINS`: Browser blocks requests from different origins. If `localhost`, external users can't access your form.
+**2. Staging** (`deploy/.env.staging`)
+```bash
+# Same as production, but allows localhost testing
+AUTHORIZE_API_LOGIN_ID=your-actual-api-login-id
+AUTHORIZE_TRANSACTION_KEY=your-actual-transaction-key
+
+APP_BASE_URL=https://www.pondmobile.com
+ALLOWED_ORIGINS=https://www.pondmobile.com,https://pondmobile.com,http://localhost:5001,http://127.0.0.1:5001
+
+FLASK_ENV=production
+DOCKER_ENV=true
+```
+
+**3. Development** (`deploy/.env.example`)
+```bash
+# Local development only
+AUTHORIZE_API_LOGIN_ID=test-id
+AUTHORIZE_TRANSACTION_KEY=test-key
+
+APP_BASE_URL=http://localhost:5001
+ALLOWED_ORIGINS=http://localhost:5001,http://127.0.0.1:5001
+
+FLASK_ENV=development
+DOCKER_ENV=true
+```
+
+**Setup on server:**
+```bash
+cd /opt/pondmobile-payment
+# Choose which environment to use
+cp deploy/.env.staging deploy/.env.active
+# Or edit directly
+nano deploy/.env.staging
+```
 ```
 
 ### Manual Deployment Trigger
 
 1. Go to `Actions` tab in GitHub
 2. Select `Deploy to Production`
-3. Click `Run workflow` button
+3. Choose environment:
+   - **staging** (default) - Production API with localhost access
+   - **production** - Strict production deployment
+   - **development** - Localhost only
+4. Click `Run workflow` button
+
+**Automatic deployment** (push to main) uses `staging` environment.
 
 ---
 
@@ -79,7 +116,7 @@ DOCKER_ENV=true
 
 - Docker installed on server
 - Git access to repository
-- `deploy/.env` configured with production values (⚠️ **NOT localhost**)
+- Environment files configured (see below)
 
 ### Quick Deploy
 
@@ -88,9 +125,15 @@ DOCKER_ENV=true
 git clone git@github.com:bpdu/PondMobilePaymentPage.git
 cd PondMobilePaymentPage
 
-# Run deploy script
+# Deploy to staging (default - allows localhost testing)
 cd deploy
-./deploy.sh
+./deploy.sh staging
+
+# Deploy to production (strict CORS)
+./deploy.sh production
+
+# Deploy to development (localhost only)
+./deploy.sh development
 ```
 
 ### Manual Docker Commands
@@ -103,13 +146,22 @@ docker build \
   -t pondmobile-payment:latest \
   .
 
-# Run container
+# Run container with staging environment (allows localhost)
 docker run -d \
   --name pondmobile-payment \
   --restart unless-stopped \
   -p 5001:5001 \
   -v pondmobile-logs:/app/logs \
-  --env-file deploy/.env \
+  --env-file deploy/.env.staging \
+  pondmobile-payment:latest
+
+# Or with production environment (strict CORS)
+docker run -d \
+  --name pondmobile-payment \
+  --restart unless-stopped \
+  -p 5001:5001 \
+  -v pondmobile-logs:/app/logs \
+  --env-file deploy/.env.production \
   pondmobile-payment:latest
 ```
 

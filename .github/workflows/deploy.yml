@@ -168,10 +168,10 @@ jobs:
             echo "🛑 Stopping Old Container"
             echo "=========================================="
 
-            if docker ps -q -f name=$CONTAINER_NAME | grep -q .; then
-              echo "  → Container exists, stopping..."
-              docker stop $CONTAINER_NAME 2>&1 || echo "  (stop failed, continuing)"
-              docker rm $CONTAINER_NAME 2>&1 || echo "  (rm failed, continuing)"
+            # Check for any container (running or stopped) with this name
+            if docker ps -aq -f name=$CONTAINER_NAME | grep -q .; then
+              echo "  → Container exists (running or stopped), removing..."
+              docker rm -f $CONTAINER_NAME 2>&1 || echo "  (rm failed, continuing)"
               echo "  ✓ Old container removed"
             else
               echo "  → No existing container found"

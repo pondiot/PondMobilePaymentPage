@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Install build dependencies and Python packages
 COPY requirements.txt .
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Runtime stage
 FROM python:3.12-slim
@@ -20,14 +20,11 @@ RUN groupadd -r nonroot && useradd -r -g nonroot nonroot
 # Set working directory
 WORKDIR /app
 
-# Copy Python packages from builder
-COPY --from=builder /root/.local /root/.local
+# Copy Python packages from builder (installed in /usr/local)
+COPY --from=builder /usr/local /usr/local
 
 # Copy application code
 COPY . .
-
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
 
 # Create logs directory with proper permissions
 RUN mkdir -p logs && chown -R nonroot:nonroot /app

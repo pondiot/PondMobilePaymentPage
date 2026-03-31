@@ -15,6 +15,20 @@ from email_validator import validate_email as EmailValidator, EmailNotValidError
 
 load_dotenv()
 
+# Environment variables (must be defined before Flask app)
+AUTHORIZE_API_URL = "https://api.authorize.net/xml/v1/request.api"
+AUTHORIZE_HOSTED_FORM_URL = "https://accept.authorize.net/payment/payment"
+
+API_LOGIN_ID = os.getenv("AUTHORIZE_API_LOGIN_ID", "").strip()
+TRANSACTION_KEY = os.getenv("AUTHORIZE_TRANSACTION_KEY", "").strip()
+APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:5001").rstrip("/")
+BUILD_VERSION = os.getenv("BUILD_VERSION", "dev")
+
+# CORS configuration
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
+if not ALLOWED_ORIGINS or ALLOWED_ORIGINS == [""]:
+    ALLOWED_ORIGINS = ["http://localhost:5001", "http://127.0.0.1:5001"]  # dev fallback
+
 app = Flask(__name__, static_folder="static")
 CORS(app, resources={
     r"/create-payment": {
@@ -34,19 +48,6 @@ limiter = Limiter(
     default_limits=["200 per day", "50 per hour"],
     storage_uri="memory://"
 )
-
-AUTHORIZE_API_URL = "https://api.authorize.net/xml/v1/request.api"
-AUTHORIZE_HOSTED_FORM_URL = "https://accept.authorize.net/payment/payment"
-
-API_LOGIN_ID = os.getenv("AUTHORIZE_API_LOGIN_ID", "").strip()
-TRANSACTION_KEY = os.getenv("AUTHORIZE_TRANSACTION_KEY", "").strip()
-APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:5001").rstrip("/")
-BUILD_VERSION = os.getenv("BUILD_VERSION", "dev")
-
-# CORS configuration
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "").split(",")
-if not ALLOWED_ORIGINS or ALLOWED_ORIGINS == [""]:
-    ALLOWED_ORIGINS = ["http://localhost:5001", "http://127.0.0.1:5001"]  # dev fallback
 
 # Bot detection patterns
 BOT_PATTERNS = [

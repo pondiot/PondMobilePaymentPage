@@ -189,6 +189,7 @@ def set_security_headers(response):
 
 
 @app.route("/health", methods=["GET"])
+@limiter.exempt
 def health_check():
     """Health check endpoint for monitoring and Docker."""
     if not API_LOGIN_ID or not TRANSACTION_KEY:

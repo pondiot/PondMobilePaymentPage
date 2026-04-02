@@ -274,7 +274,7 @@ def create_payment():
                 "setting": [
                     json_setting("hostedPaymentReturnOptions", {
                         "showReceipt": True,
-                        "url": f"{APP_BASE_URL}/return",
+                        "url": "https://www.pondmobile.com/",
                         "urlText": "Continue",
                         "cancelUrl": f"{APP_BASE_URL}/",
                         "cancelUrlText": "Cancel"
@@ -342,54 +342,3 @@ def create_payment():
         "token": token,
         "url": AUTHORIZE_HOSTED_FORM_URL
     }), 200
-
-
-@app.route("/return", methods=["GET"])
-def payment_return():
-    return """
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Thank You - POND Mobile</title>
-  <meta http-equiv="refresh" content="5;url=https://www.pondmobile.com/">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      background: linear-gradient(135deg, #c68157 0%, #6b87b7 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px 18px;
-    }
-    .box {
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.1);
-      max-width: 500px;
-    }
-    h1 { color: #4a4a4a; margin: 0 0 16px; font-size: 32px; }
-    p { color: #666; margin: 0 0 24px; font-size: 18px; }
-    .timer { color: #6b87b7; font-weight: bold; }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h1>Thank you for using Pond Mobile!</h1>
-    <p>You will be redirected to <strong>pondmobile.com</strong> in <span class="timer">5 seconds</span>.</p>
-  </div>
-  <script>
-    let seconds = 5;
-    const timer = document.querySelector('.timer');
-    setInterval(() => {
-      seconds--;
-      if (seconds > 0) timer.textContent = seconds + ' seconds';
-    }, 1000);
-  </script>
-</body>
-</html>
-"""

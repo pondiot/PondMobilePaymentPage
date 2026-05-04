@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>POND Mobile Secure Payment Gateway</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+*{box-sizing:border-box}
+
+:root{
+--orange:#FF6A00;
+--orange-dark:#e65f00;
+--card:#ffffff;
+--text:#333;
+--button:#173cff;
+--button-hover:#1232d7;
+}
+
+body{
+margin:0;
+min-height:100vh;
+font-family:Arial,Helvetica,sans-serif;
+background:linear-gradient(180deg,var(--orange) 0%, #ff8c2f 100%);
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.card{
+background:var(--card);
+border-radius:28px;
+padding:40px 30px;
+max-width:600px;
+width:100%;
+text-align:center;
+box-shadow:0 15px 40px rgba(0,0,0,.15);
+}
+
+.brand img{
+width:240px;
+margin-bottom:20px;
+}
+
+h1{
+margin:0 0 25px;
+font-size:32px;
+color:var(--text);
+}
+
+input{
+width:100%;
+height:60px;
+margin-bottom:15px;
+border-radius:30px;
+border:none;
+padding:0 20px;
+font-size:16px;
+background:#f5f5f5;
+}
+
+button{
+width:220px;
+height:50px;
+border-radius:25px;
+border:none;
+background:var(--button);
+color:#fff;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+}
+
+button:hover{
+background:var(--button-hover);
+}
+
+.note{
+margin-top:25px;
+font-size:14px;
+color:#444;
+line-height:1.6;
+}
+
+.error{
+color:#b00020;
+margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="brand">
+<img src="pond-mobile-logo.png">
+</div>
+
+<h1>Welcome to POND mobile’s Secure Payment Gateway</h1>
+
+<form id="paymentForm">
+<input type="text" name="reference" placeholder="Invoice number or mobile number" required>
+<input type="number" name="amount" placeholder="Amount" required>
+<input type="email" name="email" placeholder="Email address" required>
+
+<button id="continueBtn">CONTINUE</button>
+
+<div class="error" id="errorBox"></div>
+</form>
+
+<div class="note">
+Use this secure portal to make your payment. Just enter the invoice number or a mobile number above, along with the payment amount. For accounts with multiple mobile numbers, you only need to provide one number associated with the account.
+</div>
+
+</div>
+
+<script>
+const form=document.getElementById("paymentForm");
+const btn=document.getElementById("continueBtn");
+const errorBox=document.getElementById("errorBox");
+
+form.addEventListener("submit",async(e)=>{
+e.preventDefault();
+btn.disabled=true;
+errorBox.textContent="";
+
+const data={
+reference:form.reference.value,
+amount:form.amount.value,
+email:form.email.value
+};
+
+try{
+const res=await fetch("https://dev.pondmobile.com:5001/create-payment",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(data)
+});
+
+const json=await res.json();
+
+if(!res.ok)throw new Error(json.error);
+
+const f=document.createElement("form");
+f.method="POST";
+f.action=json.url;
+
+const t=document.createElement("input");
+t.type="hidden";
+t.name="token";
+t.value=json.token;
+
+f.appendChild(t);
+document.body.appendChild(f);
+f.submit();
+
+}catch(err){
+errorBox.textContent=err.message;
+btn.disabled=false;
+}
+});
+</script>
+
+</body>
+</html>
